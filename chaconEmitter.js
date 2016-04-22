@@ -50,7 +50,7 @@ function sendPair(bool) {
   }
 }
 
-function buildOrder(emitterId, deviceId, powerOn) {
+function buildOrder(emitterId, deviceId, powerOn, dimLevel) {
   // bit[0-25] convert the emitterId 
   var order = intToBytes(emitterId, 26);
   // 26th bit group command 
@@ -59,6 +59,10 @@ function buildOrder(emitterId, deviceId, powerOn) {
   order += powerOn?'1':'0';
   // bit[28->32] deviceId
   order += intToBytes(deviceId, 4);
+  // bit[32->36] dim level
+  if (dimLevel) {
+    order += intToBytes(dimLevel, 5);
+  }
   return order;
 }
 
