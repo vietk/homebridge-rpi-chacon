@@ -4,7 +4,7 @@
   "description": "A homebridge module able to switch on/off Chacon modules using RF433 and wiringPi",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test
   },
   "engines": {
     "node": ">=0.12.0",
@@ -14,6 +14,7 @@
     "wiring-pi": "^2.1.1"
   },
   "keywords": [
+    "RF433",
     "chacon",
     "wiringPi",
     "homebridge-plugin"
