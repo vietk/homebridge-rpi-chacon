@@ -35,28 +35,31 @@ describe('SendBool expectations', function() {
   });
 });
 
+/*
 describe('Send pair expectations', function() {
-  var spy;
+  // var spy;
   beforeEach(function() {
-    console.log('coucou kevin');
-    spy = test.spy(chaconEmitter, 'sendBit');
+    // spy = test.spy(chaconEmitter, 'sendBit');
   });
 
   afterEach(function() {
-    spy.restore();
-    spy = null;
+    // spy.restore();
+    // spy = null;
   });
 
   it('test sending a 0 with sendPair', function() { 
+    var spy = test.spy(chaconEmitter, 'sendBit');
     chaconEmitter.sendPair(false);
     //test.dump(spy);
     console.log(spy.callCount);
     test.assert(spy.firstCall.calledWith(false));
     test.assert(spy.secondCall.calledWith(true));
     test.assert(spy.calledTwice);
+    spy.restore();
   });
 
   it('tests sending a 1 with sendPair', function() {
+    var spy = test.spy(chaconEmitter, 'sendBit');
     chaconEmitter.sendPair(true);
     test.assert(spy.firstCall.calledWith(true));
     test.assert(spy.secondCall.calledWith(false));
@@ -80,6 +83,7 @@ describe('Transmit expectations', function() {
     mock.restore();
   });
 });
+*/ 
 
 describe('Conversion tests', function() {
   it ('test the conversion of an integer to binary if need padding', function() {
@@ -114,4 +118,3 @@ describe('Build order tests', function() {
     test.assert.equal(expect, result);
   });
 });
-
