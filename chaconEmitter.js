@@ -1,6 +1,7 @@
 var wpi = require('wiring-pi')
 
 var pin = 0;
+var dimLevels = 15;
 
 // Init chacon emitter
 function init(GPIOPin) {
@@ -36,9 +37,20 @@ function sendBit(bool) {
   }
 }
 
+// Sends the DIMMER special bit
+function sendDimmerBit() {
+    wpi.digitalWrite(pin, wpi.HIGH);
+    wpi.delayMicroseconds(310);
+    wpi.digitalWrite(pin, wpi.LOW);
+    wpi.delayMicroseconds(310);
+    wpi.digitalWrite(pin, wpi.HIGH);
+    wpi.delayMicroseconds(310);
+    wpi.digitalWrite(pin, wpi.LOW);
+    wpi.delayMicroseconds(310);
+}
+
 // Send pair of bits to simulate real bit send
 // 0 = 01 , 1 = 10
-
 function sendPair(bool) {
   if (bool) {
     sendBit(true);
@@ -50,7 +62,8 @@ function sendPair(bool) {
   }
 }
 
-function buildOrder(emitterId, deviceId, powerOn, dimLevel) {
+// build a power on/off command
+function buildOrder(emitterId, deviceId, powerOn) {
   // bit[0-25] convert the emitterId 
   var order = intToBytes(emitterId, 26);
   // 26th bit group command 
@@ -60,9 +73,14 @@ function buildOrder(emitterId, deviceId, powerOn, dimLevel) {
   // bit[28->32] deviceId
   order += intToBytes(deviceId, 4);
   // bit[32->36] dim level
-  if (dimLevel) {
-    order += intToBytes(dimLevel, 5);
-  }
+  return order;
+}
+
+// build a Dim command, the dimLevel is an integer between 0-100
+function buildDimOrder(emitterId, deviceId, dimLevel) {
+  var dim = Math.floor((dimLevel * dimLevels) / 100);
+  var order = buildOrder(emitterId, deviceId, true);
+  order += intToBytes(dim, 4);
   return order;
 }
 
@@ -89,14 +107,14 @@ function pad(str, size) {
 }
 
 // Transmit over the air the data
-function transmit(order) {
-    //console.log('order : ' + order);
+function transmit(order, dimmer) {
+    // console.log('order : ' + order);
     for (var i = 0; i < 5; i++) {
-      doTransmit(order);
-      wpi.delay(10);
+      doTransmit(order, dimmer);
+      wpi.delayMicroseconds(10);
   }
 }
-function doTransmit(order) {
+function doTransmit(order, dimmer) {
   // lock sequence to begin signal emission
   wpi.digitalWrite(pin, wpi.HIGH);
   wpi.delayMicroseconds(275); 
@@ -108,7 +126,12 @@ function doTransmit(order) {
   wpi.delayMicroseconds(2675);
   wpi.digitalWrite(pin, wpi.HIGH);
   // send order data
-  for (var i = 0; i < order.length; i++) {
+  for (var i = 0; i < order.length; i++) { 
+    if (dimmer && i ==  27) { // send special bit
+      sendDimmerBit();
+      continue;
+    }
+//    console.log(i);
     sendPair(toBool(order.charAt(i)));
   }
   wpi.digitalWrite(pin, wpi.HIGH);
@@ -128,3 +151,4 @@ module.exports.intToBytes = intToBytes;
 module.exports.buildOrder = buildOrder;
 module.exports.init = init;
 module.exports.doTransmit = doTransmit;
+module.exports.buildDimOrder = buildDimOrder;
