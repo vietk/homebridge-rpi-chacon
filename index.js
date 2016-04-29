@@ -13,6 +13,7 @@ function ChaconAccessory(log, config) {
   this.log          = log;
   this.deviceId     = config['deviceId'];
   this.emitterId    = config['emitterId'];
+  this.isDimmable   = config['dimmable'];
   if (noInitDone) {
     chaconEmitter.init();
     noInitDone = false;
@@ -29,14 +30,13 @@ ChaconAccessory.prototype = {
   
   setBrightness: function(level, callback) {
     var that = this;
-    var order = chaconEmitter.buildOrder(this.emitterId, this.deviceId, 0, level);
-    chaconEmitter.transmit(order);
+    var order = chaconEmitter.buildDimOrder(this.emitterId, this.deviceId, level);
+    chaconEmitter.transmit(order, true);
     callback(null);
   },
   
   getServices: function() {
     var switchService = new Service.Switch(this.name);
-    var statelessSwitch = new Service.StatelessProgrammableSwitch(this.name);
     var lightBulb = new Service.Lightbulb(this.name);
     //var informationService = new Service.AccessoryInformation();
 
@@ -48,16 +48,18 @@ ChaconAccessory.prototype = {
     switchService
       .getCharacteristic(Characteristic.On)
       .on('set', this.setPowerState.bind(this));
-    statelessSwitch
-      .getCharacteristic(Characteristic.ProgrammableSwitchEvent)
-      .on('set', this.setPowerState.bind(this));
     lightBulb
       .getCharacteristic(Characteristic.On)
       .on('set', this.setPowerState.bind(this));
     lightBulb
       .getCharacteristic(Characteristic.Brightness)
-      .on('set', this.setPowerState.bind(this))
-    return [switchService];
+      .on('set', this.setBrightness.bind(this))
+    if (this.isDimmable === "true") {
+      return [lightBulb];
+    }
+    else {
+      return [switchService];
+    }
   }
 }
 
